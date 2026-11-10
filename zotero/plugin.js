@@ -8,7 +8,7 @@ var WordPopPlugin = {
   paneID: null,
 
   getSettings() {
-    const d = WordPopCore.DEFAULTS;
+    const d = Object.assign({ popupWidth: 380, popupHeight: 360 }, WordPopCore.DEFAULTS);
     const get = (k) => {
       const v = Zotero.Prefs.get(this.PREFIX + k, true);
       return v === undefined || v === null || v === '' ? d[k] : v;
@@ -23,6 +23,8 @@ var WordPopPlugin = {
       maxWords: int('maxWords', 1, 20),
       maxExamples: int('maxExamples', 0, 5),
       showEnglish: !!get('showEnglish'),
+      popupWidth: int('popupWidth', 200, 1000),
+      popupHeight: int('popupHeight', 120, 1000),
     };
   },
 
@@ -79,8 +81,22 @@ var WordPopPlugin = {
 
     const box = doc.createElementNS(this.XHTML, 'div');
     box.className = 'wordpop-zotero';
-    box.style.maxWidth = '360px';
-    box.style.maxHeight = '320px';
+    // The reader caps .selection-popup at max-width: 198px and otherwise sizes it to
+    // its content, so lift the cap and give the box a real width (kept inside the
+    // reader view when the window is narrow). Translate for Zotero does the same.
+    const popup = doc.querySelector('.selection-popup');
+    if (popup) {
+      popup.style.maxWidth = 'none';
+      const colors = popup.querySelector('.colors');
+      if (colors) {
+        colors.style.width = '100%';
+        colors.style.justifyContent = 'space-evenly';
+      }
+    }
+    box.style.width = `${s.popupWidth}px`;
+    box.style.maxWidth = 'calc(100vw - 48px)';
+    box.style.boxSizing = 'border-box';
+    box.style.maxHeight = `${s.popupHeight}px`;
     box.style.overflowY = 'auto';
     box.style.padding = '4px 6px';
     box.append(WordPopRender.styleElement(doc), WordPopRender.loading(doc, WordPopCore.normalize(text)));
