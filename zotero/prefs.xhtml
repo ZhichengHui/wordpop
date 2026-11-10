@@ -1,0 +1,24 @@
+<vbox id="wordpop-prefs"
+      xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+      xmlns:html="http://www.w3.org/1999/xhtml">
+  <groupbox>
+    <label><html:h2>查词规则</html:h2></label>
+    <radiogroup preference="extensions.wordpop.mode">
+      <radio value="strict" label="精确：柯林斯有原词 → 有道在线 → 柯林斯词形还原"/>
+      <radio value="loose" label="宽松：柯林斯有原词或词形还原 → 有道在线"/>
+    </radiogroup>
+  </groupbox>
+  <groupbox>
+    <label><html:h2>划词与显示</html:h2></label>
+    <checkbox preference="extensions.wordpop.enabled" label="选中英文后在弹窗里查词"/>
+    <checkbox preference="extensions.wordpop.showEnglish" label="显示柯林斯英文释义"/>
+    <hbox align="center">
+      <label value="最多查询的单词数"/>
+      <html:input type="number" min="1" max="20" preference="extensions.wordpop.maxWords"/>
+    </hbox>
+    <hbox align="center">
+      <label value="每个义项的例句数"/>
+      <html:input type="number" min="0" max="5" preference="extensions.wordpop.maxExamples"/>
+    </hbox>
+  </groupbox>
+</vbox>

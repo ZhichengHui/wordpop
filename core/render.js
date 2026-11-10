@@ -69,7 +69,9 @@ var WordPopRender = (() => {
     const ol = el(doc, 'ol', 'wp-defs');
     for (const d of c.defs || []) {
       const li = el(doc, 'li');
-      if (d.pos_cn || d.pos_en) li.append(el(doc, 'span', 'wp-pos', d.pos_cn || d.pos_en));
+      // Some Collins Chinese POS labels are whole sentences; use the short English tag then.
+      const pos = d.pos_cn && d.pos_cn.length <= 6 ? d.pos_cn : (d.pos_en || d.pos_cn);
+      if (pos) li.append(el(doc, 'span', 'wp-pos', pos));
       li.append(el(doc, 'span', null, d.def_cn || ''));
       if (opts.showEnglish && d.def_en) li.append(el(doc, 'div', 'wp-en', d.def_en.trim()));
       for (const ex of (d.ext || []).slice(0, opts.maxExamples)) {

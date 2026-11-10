@@ -14,7 +14,8 @@
 var WordPopCore = (() => {
   'use strict';
 
-  const DEFAULTS = { mode: 'strict', maxWords: 5, maxExamples: 1 };
+  const DEFAULTS = { enabled: true, mode: 'strict', maxWords: 5, maxExamples: 1, showEnglish: true };
+  const CACHE_SIZE = 200;
   const MAX_CHARS = 80;
 
   function normalize(text) {
@@ -143,8 +144,22 @@ var WordPopCore = (() => {
       return parseYoudao(host.parseHTML(html));
     }
 
+    // Successful results are cached; results carrying a network error are not.
+    const cache = new Map();
+
     async function lookup(text, settings) {
       const s = Object.assign({}, DEFAULTS, settings);
+      const key = `${s.mode}|${normalize(text)}`;
+      if (cache.has(key)) return cache.get(key);
+      const result = await lookupUncached(text, s);
+      if (!result.error) {
+        cache.set(key, result);
+        if (cache.size > CACHE_SIZE) cache.delete(cache.keys().next().value);
+      }
+      return result;
+    }
+
+    async function lookupUncached(text, s) {
       const query = normalize(text);
       const result = { query, mode: s.mode, source: null, via: null };
       if (!query) return result;
