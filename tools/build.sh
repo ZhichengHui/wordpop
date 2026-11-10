@@ -7,6 +7,10 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DIST="$ROOT/dist"
+if [ ! -f "$ROOT/data/wordforms.json" ]; then
+  echo "data/ is missing; run tools/fetch-data.sh first" >&2
+  exit 1
+fi
 rm -rf "$DIST"
 mkdir -p "$DIST/firefox" "$DIST/zotero"
 
