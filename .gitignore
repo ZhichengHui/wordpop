@@ -1,0 +1,4 @@
+node_modules/
+dist/
+.claude/
+web-ext-artifacts/
