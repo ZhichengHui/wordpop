@@ -105,7 +105,7 @@
     try {
       result = await browser.runtime.sendMessage({ type: 'lookup', text });
     } catch (e) {
-      result = { query, source: null, error: String(e && e.message ? e.message : e) };
+      result = { query, source: null, errors: [{ source: 'internal', message: String(e && e.message ? e.message : e) }] };
     }
     if (mine !== seq) return;
     card.replaceChildren(WordPopRender.render(document, result, {

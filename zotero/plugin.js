@@ -29,8 +29,12 @@ var WordPopPlugin = {
   async startup({ id, rootURI }) {
     this.id = id;
     this.engine = WordPopCore.createEngine({
+      // rootURI is a jar: URL when the plugin is installed from an .xpi.
+      // Zotero.File.getContentsFromURLAsync (Zotero.HTTP) rejects jar: URLs, fetch does not.
       async loadJSON(path) {
-        return JSON.parse(await Zotero.File.getContentsFromURLAsync(rootURI + path));
+        const r = await Zotero.getMainWindow().fetch(rootURI + path);
+        if (!r.ok) throw new Error(`HTTP ${r.status} for ${path}`);
+        return r.json();
       },
       async fetchText(url) {
         const xhr = await Zotero.HTTP.request('GET', url, { responseType: 'text', timeout: 15000 });
@@ -83,7 +87,10 @@ var WordPopPlugin = {
     append(box);
 
     this.engine.lookup(text, s)
-      .catch((e) => ({ query: WordPopCore.normalize(text), source: null, error: String(e) }))
+      .catch((e) => ({
+        query: WordPopCore.normalize(text), source: null,
+        errors: [{ source: 'internal', message: String(e) }],
+      }))
       .then((result) => {
         box.replaceChildren(
           WordPopRender.styleElement(doc),

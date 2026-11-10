@@ -140,7 +140,10 @@ var WordPopRender = (() => {
     else if (result.source === 'youdao') renderYoudao(doc, root, result, o);
     else root.append(el(doc, 'div', 'wp-note', `未找到：${result.query}`));
 
-    if (result.error) root.append(el(doc, 'div', 'wp-error', `有道查询失败：${result.error}`));
+    const labels = { collins: '柯林斯词库读取失败', youdao: '有道查询失败' };
+    for (const err of result.errors || []) {
+      root.append(el(doc, 'div', 'wp-error', `${labels[err.source] || '查询出错'}：${err.message}`));
+    }
 
     const src = { collins: '柯林斯（离线）', youdao: '有道（在线）' }[result.source];
     if (src) root.append(el(doc, 'div', 'wp-foot', src));

@@ -25,10 +25,13 @@ const pages = {
   'the proof is sound and complete': 'sentence.html',
 };
 
-function makeEngine({ failNetwork = false } = {}) {
+function makeEngine({ failNetwork = false, failData = false } = {}) {
   const fetched = [];
   const engine = WordPopCore.createEngine({
-    loadJSON: async (p) => JSON.parse(fs.readFileSync(path.join(ROOT, p), 'utf8')),
+    loadJSON: async (p) => {
+      if (failData) throw new Error('cannot read ' + p);
+      return JSON.parse(fs.readFileSync(path.join(ROOT, p), 'utf8'));
+    },
     fetchText: async (url) => {
       fetched.push(url);
       if (failNetwork) throw new Error('offline');
@@ -95,7 +98,34 @@ test('strict: Youdao failure falls back to Collins base form and reports error',
   const r = await engine.lookup('soundness', { mode: 'strict' });
   assert.equal(r.source, 'collins');
   assert.equal(r.via, 'wordform');
-  assert.equal(r.error, 'offline');
+  assert.deepEqual(JSON.parse(JSON.stringify(r.errors)), [{ source: 'youdao', message: 'offline' }]);
+});
+
+test('Collins data failure still queries Youdao and reports the Collins error', async () => {
+  const { engine } = makeEngine({ failData: true });
+  const r = await engine.lookup('endeavor', { mode: 'strict' });
+  assert.equal(r.source, 'youdao');
+  assert.equal(r.errors.length, 1);
+  assert.equal(r.errors[0].source, 'collins');
+  const doc = new DOMParser().parseFromString('<html><body></body></html>', 'text/html');
+  const text = WordPopRender.render(doc, r, {}).textContent;
+  assert.ok(text.includes('柯林斯词库读取失败'), text);
+  assert.ok(!text.includes('有道查询失败'), text);
+});
+
+test('results with errors are not cached', async () => {
+  let fail = true;
+  const engine = WordPopCore.createEngine({
+    loadJSON: async (p) => {
+      if (fail) throw new Error('boom');
+      return JSON.parse(fs.readFileSync(path.join(ROOT, p), 'utf8'));
+    },
+    fetchText: async () => { throw new Error('offline'); },
+    parseHTML: (html) => new DOMParser().parseFromString(html, 'text/html'),
+  });
+  assert.equal((await engine.lookup('pertinent', {})).source, null);
+  fail = false;
+  assert.equal((await engine.lookup('pertinent', {})).source, 'collins');
 });
 
 test('unknown word gives no result', async () => {

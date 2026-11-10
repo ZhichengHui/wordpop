@@ -152,7 +152,7 @@ var WordPopCore = (() => {
       const key = `${s.mode}|${normalize(text)}`;
       if (cache.has(key)) return cache.get(key);
       const result = await lookupUncached(text, s);
-      if (!result.error) {
+      if (!result.errors.length) {
         cache.set(key, result);
         if (cache.size > CACHE_SIZE) cache.delete(cache.keys().next().value);
       }
@@ -161,14 +161,24 @@ var WordPopCore = (() => {
 
     async function lookupUncached(text, s) {
       const query = normalize(text);
-      const result = { query, mode: s.mode, source: null, via: null };
+      // errors: [{ source: 'collins' | 'youdao', message }]. A failing source is
+      // skipped so that the other one can still answer.
+      const result = { query, mode: s.mode, source: null, via: null, errors: [] };
       if (!query) return result;
+      const fail = (source, e) =>
+        result.errors.push({ source, message: String(e && e.message ? e.message : e) });
 
-      const exact = await collinsEntry(query);
-      if (exact) return Object.assign(result, { source: 'collins', via: 'exact', collins: exact });
-
-      const base = await baseForm(query);
-      const stemmed = base ? await collinsEntry(base) : null;
+      let exact = null;
+      let base = null;
+      let stemmed = null;
+      try {
+        exact = await collinsEntry(query);
+        if (exact) return Object.assign(result, { source: 'collins', via: 'exact', collins: exact });
+        base = await baseForm(query);
+        stemmed = base ? await collinsEntry(base) : null;
+      } catch (e) {
+        fail('collins', e);
+      }
       const viaForm = () =>
         Object.assign(result, { source: 'collins', via: 'wordform', base, collins: stemmed });
 
@@ -178,7 +188,7 @@ var WordPopCore = (() => {
         const online = await youdao(query);
         if (online) return Object.assign(result, { source: 'youdao', via: 'online', youdao: online });
       } catch (e) {
-        result.error = String(e && e.message ? e.message : e);
+        fail('youdao', e);
       }
 
       if (stemmed) return viaForm();

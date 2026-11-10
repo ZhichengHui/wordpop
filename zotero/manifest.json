@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "WordPop 划词词典",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "在 PDF 阅读器里选中英文即查词：离线柯林斯优先，查不到时用有道在线。",
   "author": "zhicheng",
   "applications": {
