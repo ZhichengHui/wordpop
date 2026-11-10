@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>WordPop 设置</title>
+<style>
+  body { font: 14px/1.5 system-ui, sans-serif; margin: 12px 16px; }
+  fieldset { border: 1px solid rgba(127,127,127,.35); border-radius: 6px; margin: 0 0 12px; padding: 8px 12px; }
+  legend { font-weight: 600; }
+  label { display: block; margin: 4px 0; }
+  input[type=number] { width: 4em; }
+  #perm { color: #c0392b; }
+  #perm[hidden] { display: none; }
+  .hint { font-size: 12px; opacity: .7; }
+</style>
+</head>
+<body>
+<p id="perm" hidden>
+  插件还没有访问网站的权限，查有道和打开在线 PDF 都需要它。
+  <button id="grant">授权</button>
+</p>
+
+<fieldset>
+  <legend>查词规则</legend>
+  <label><input type="radio" name="mode" value="strict"> 精确：柯林斯有原词 → 有道在线 → 柯林斯词形还原</label>
+  <label><input type="radio" name="mode" value="loose"> 宽松：柯林斯有原词或词形还原 → 有道在线</label>
+  <div class="hint">精确模式下，soundness 这类派生词会显示有道的释义，而不是词根 sound 的释义。</div>
+</fieldset>
+
+<fieldset>
+  <legend>划词</legend>
+  <label><input type="checkbox" id="enabled"> 选中英文后自动查词</label>
+  <label>最多查询 <input type="number" id="maxWords" min="1" max="20"> 个单词的选中内容</label>
+</fieldset>
+
+<fieldset>
+  <legend>显示</legend>
+  <label><input type="checkbox" id="showEnglish"> 显示柯林斯英文释义</label>
+  <label>每个义项显示 <input type="number" id="maxExamples" min="0" max="5"> 条例句</label>
+</fieldset>
+
+<fieldset>
+  <legend>PDF</legend>
+  <label><input type="checkbox" id="pdfViewer"> 用插件内置的 PDF 阅读器打开在线 PDF（这样才能在 PDF 里划词）</label>
+  <div class="hint">本地 PDF 请点工具栏上的 WordPop 按钮打开阅读器，再拖入文件或用阅读器的"打开"按钮。</div>
+</fieldset>
+
+<script src="core/lookup.js"></script>
+<script src="options.js"></script>
+</body>
+</html>

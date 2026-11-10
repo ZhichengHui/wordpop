@@ -1,0 +1,13 @@
+{
+  "manifest_version": 2,
+  "name": "wordpop-e2e-harness",
+  "version": "1.0",
+  "applications": {
+    "zotero": {
+      "id": "wordpop-e2e-harness@local",
+      "update_url": "https://localhost/update.json",
+      "strict_min_version": "7.0",
+      "strict_max_version": "10.9.9"
+    }
+  }
+}
